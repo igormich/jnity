@@ -26,7 +26,6 @@ public class SceneTreeView extends ViewPart {
 
 	public static final String ID = "jnity.views.SceneTreeView";
 	private static WeakReference<SceneTreeView> instance = new WeakReference<SceneTreeView>(null);
-	private Tree tree;
 	private SceneEditor sceneEditor;
 	private ISelectionChangedListener treeSelectionListener = new ISelectionChangedListener() {
 

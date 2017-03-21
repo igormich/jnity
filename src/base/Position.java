@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;
+import org.lwjgl.util.vector.Matrix3f;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Quaternion;
 import org.lwjgl.util.vector.Vector3f;
@@ -24,7 +25,7 @@ public class Position implements Applyable, Serializable {
 		return (float) (angle * Math.PI / 180);
 	}
 
-	public float radToGrad(float angle) {
+	public static float radToGrad(float angle) {
 		return (float) (angle * 180 / Math.PI);
 	}
 
@@ -64,7 +65,7 @@ public class Position implements Applyable, Serializable {
 		cashed = true;
 	}
 
-	private Matrix4f getMatrix() {
+	public Matrix4f getMatrix() {
 		Matrix4f tempMatrix = new Matrix4f();
 		Matrix4f.setIdentity(tempMatrix);
 		tempMatrix = tempMatrix.translate(position);
@@ -76,7 +77,6 @@ public class Position implements Applyable, Serializable {
 
 	public void invalidate() {
 		cashed = false;
-		;
 	}
 
 	public synchronized Position turn(float angle) {
@@ -360,37 +360,38 @@ public class Position implements Applyable, Serializable {
 		return dest;
 	}
 
-	public Matrix4f rebuildRelativeTo(Position parent) {
+	public Position rebuildRelativeTo(Position parent) {
 		Matrix4f absoluteMatrix = getAbsoluteMatrix();
 		Matrix4f parentAbsoluteMatrix = parent.getAbsoluteMatrix();
 		Matrix4f matrix = Matrix4f.mul((Matrix4f)parentAbsoluteMatrix.invert(), absoluteMatrix, new Matrix4f());
 		matrix.store(cash);
 		cash.flip();
 		cashed = true;
-		return matrix;
-		//this.setAbsoluteMatrix(matrix);
+		this.setMatrix(matrix);
+		return this;
 	}
-
-	private void setAbsoluteMatrix(Matrix4f matrix) {
+	public Vector3f getEulerAnglesZYX(Matrix4f m) {
+		Vector3f dest = new Vector3f();
+        dest.x = -(float) Math.atan2(m.m12, m.m22);
+        dest.y = -(float) Math.atan2(-m.m02, (float) Math.sqrt(m.m12 * m.m12 + m.m22 * m.m22));
+        dest.z = -(float) Math.atan2(m.m01, m.m00);
+        return dest;
+    }
+	private void setMatrix(Matrix4f matrix) {
 		position.x = matrix.m30;
 		position.y = matrix.m31;
 		position.z = matrix.m32;
-		float sy = (float) Math.sqrt(matrix.m00 * matrix.m00 + matrix.m10 * matrix.m10);
-		boolean singular = sy < 1e-6; // If float x, y, z;
-		if (!singular) {
-			turn = (float) Math.atan2(matrix.m21, matrix.m22);
-			roll = (float) Math.atan2(-matrix.m20, sy);
-			pitch = (float) Math.atan2(matrix.m10, matrix.m00);
-		} else {
-			turn = (float) Math.atan2(-matrix.m12, matrix.m11);
-			roll = (float) Math.atan2(matrix.m20, sy);
-			pitch = 0;
-		}
-		turn = radToGrad(turn);
-		roll = radToGrad(roll);
-		pitch = radToGrad(pitch);
+
+        Vector3f angles = getEulerAnglesZYX(matrix);
 		
-		//add scale set
+		this.turn = radToGrad(angles.y);
+		this.pitch = radToGrad(angles.x);
+		this.roll = radToGrad(angles.z);
+		
+
+		scale = new Vector3f(new Vector3f(matrix.m00, matrix.m10, matrix.m20).length(),
+							 new Vector3f(matrix.m01, matrix.m11, matrix.m21).length(),
+							 new Vector3f(matrix.m02, matrix.m12, matrix.m22).length());
 		
 		invalidate();
 		

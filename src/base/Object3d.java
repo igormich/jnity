@@ -59,9 +59,9 @@ public class Object3d implements Serializable, FastCloneable {
 				throw new IllegalStateException("Recursive hierarchy");
 			nextParent = nextParent.getParent();
 		}
+		position.rebuildRelativeTo(parent.getPosition());
 		if (this.parent != null)
 			this.parent.removeChild(this);
-		position.rebuildRelativeTo(parent.getPosition());
 		this.parent = parent;
 	}
 
@@ -243,12 +243,16 @@ public class Object3d implements Serializable, FastCloneable {
 	}
 
 	public Object3d addChild(Object3d object3d) {
+		if(getChildren().contains(object3d))
+			return this;
 		object3d.setParent(this);
 		children.add(object3d);
 		return this;
 	};
 	
 	public Object3d addChildBefore(Object3d object3d, Object3d target) {
+		if(getChildren().contains(object3d))
+			return this;
 		object3d.setParent(this);
 		int index = children.indexOf(target);
 		children.add(index, object3d);
@@ -256,11 +260,11 @@ public class Object3d implements Serializable, FastCloneable {
 	}
 
 	public Object3d addChildAfter(Object3d object3d, Object3d target) {
+		if(getChildren().contains(object3d))
+			return this;
 		object3d.setParent(this);
 		int index = children.indexOf(target);
 		children.add(index + 1, object3d);
 		return this;
-
 	}
-
 }

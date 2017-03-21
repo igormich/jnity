@@ -156,6 +156,10 @@ public class SceneEditor extends EditorPart {
 		setPartName("*" + fileEditorInput.getName());
 		dirty = true;
 		firePropertyChange(PROP_DIRTY);
+		SceneTreeView sceneTreeView = SceneTreeView.getInstance();
+		if (sceneTreeView != null) {
+			sceneTreeView.setSceneEditor(this);
+		}
 	}
 
 	@Override
