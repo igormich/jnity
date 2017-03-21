@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            name="Jnity"
+            id="jnity">
+      </category>
+      <view
+            name="Object Properties"
+            icon="icons/sample.gif"
+            category="jnity"
+            class="jnity.views.ObjectPropertiesView"
+            id="jnity.views.ObjectPropertiesView">
+      </view>
+      <view
+            category="jnity"
+            class="jnity.views.SceneTreeView"
+            icon="icons/sample.gif"
+            id="jnity.views.SceneTreeView"
+            name="Scene Tree"
+            restorable="true">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <category
+            id="jnity"
+            name="3d Scenes">
+      </category>
+      <wizard
+            category="jnity"
+            class="jnity.wizards.NewSceneWizard"
+            icon="icons/sample.gif"
+            id="jnity.wizards.NewSceneWizard"
+            name="New 3d Scene Wizard">
+      </wizard>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="jnity.views.SceneEditor"
+            default="false"
+            extensions="scene"
+            icon="icons/sample.gif"
+            id="jnity.sceneEditor"
+            name="sceneEditor">
+      </editor>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="jnity.PerspectiveFactory"
+            id="jnity.perspective"
+            name="Jnity perspective">
+      </perspective>
+   </extension>
+   <extension
+         id="jnity.JnityNature"
+         name="Junity nature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run
+               class="jnity.JnityNature">
+         </run>
+      </runtime>
+      <requires-nature
+            id="org.eclipse.jdt.core.javanature">
+      </requires-nature>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            defaultHandler="jnity.AddNatureHandler"
+            id="junity.addNature"
+            name="Add Junity Nature">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:org.eclipse.ui.projectConfigure">
+         <command
+               commandId="junity.addNature"
+               label="Add Junity Nature"
+               style="push">
+            <visibleWhen
+                  checkEnabled="false">
+               <not>
+                  <reference
+                        definitionId="jnity.hasJnityNature">
+                  </reference>
+               </not>
+            </visibleWhen>
+         </command>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.core.expressions.definitions">
+      <definition
+            id="jnity.hasJavaNature">
+         <adapt
+               type="org.eclipse.core.resources.IProject">
+            <test
+                  property="org.eclipse.core.resources.projectNature"
+                  value="org.eclipse.jdt.core.javanature">
+            </test>
+         </adapt>
+      </definition>
+      <definition
+            id="jnity.hasJnityNature">
+         <adapt
+               type="org.eclipse.core.resources.IProject">
+            <test
+                  property="org.eclipse.core.resources.projectNature"
+                  value="jnity.nature">
+            </test>
+         </adapt>
+      </definition>
+   </extension>
+
+</plugin>
