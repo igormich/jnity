@@ -6,6 +6,12 @@ import java.awt.Canvas;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Text;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
@@ -83,5 +89,44 @@ public class Utils {
 		initGL();
 		
 	}
+	public static GridData fillGridHorizontal() {
+		GridData gridData = new GridData();
+		gridData.horizontalAlignment = GridData.FILL;
+		gridData.grabExcessHorizontalSpace = true;
+		return gridData;
+	}
+	public static void clear(Composite parent) {
+		for (Control control : parent.getChildren()) {
+			control.dispose();
+		}
+	}
+	public static void setIfChangeFloat(Text input, float value) {
+		if (parseFloat(input.getText()) != value) {
+			input.setText("" + value);
+		}
+	}
 
+	public static float parseFloat(String text) {
+		try {
+			return Float.parseFloat(text);
+		} catch (Exception e) {
+			return 0;
+		}
+	}
+	public static void setIfChangeString(Text input, String value) {
+		if (!input.getText().equals(value)) {
+			input.setText(value);
+		}
+		
+	}
+	public static void setIfChangeString(Group input, String value) {
+		if (!input.getText().equals(value)) {
+			input.setText(value);
+		}
+	}
+	public static void setIfChangeString(Combo input, String value) {
+		if (!input.getText().equals(value)) {
+			input.setText(value);
+		}	
+	}
 }

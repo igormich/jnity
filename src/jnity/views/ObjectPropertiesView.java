@@ -1,38 +1,36 @@
 package jnity.views;
 
 import java.lang.ref.WeakReference;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.MenuEvent;
+import org.eclipse.swt.events.MenuListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.events.VerifyListener;
-import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
 import org.lwjgl.util.vector.Vector3f;
 
 import base.Object3d;
 import base.Position;
-import io.ResourceController;
-import jnity.views.editor.SceneController;
-import properties.Mesh;
+import jnity.views.properties.MultiMeshEditor;
+import jnity.views.properties.PropertyEditor;
 import properties.MultiMesh;
 import properties.Property3d;
 import properties.SelectionOverlay;
@@ -49,7 +47,7 @@ public class ObjectPropertiesView extends ViewPart {
 	public static final String ID = "jnity.views.ObjectPropertiesView";
 	
 	
-	private Map<Property3d, Composite> propertiesPanels = new HashMap<>();
+	private Map<Property3d, PropertyEditor> propertiesPanels = new HashMap<>();
 	
 	private Text inputTX;
 	private Text inputTY;
@@ -105,28 +103,14 @@ public class ObjectPropertiesView extends ViewPart {
 		public void modifyText(ModifyEvent arg0) {
 			Object3d object3d = ObjectPropertiesView.this.object3d;
 			if (object3d != null) {
-				float x = parseFloat(inputTX.getText());
-				float y = parseFloat(inputTY.getText());
-				float z = parseFloat(inputTZ.getText());
+				float x = Utils.parseFloat(inputTX.getText());
+				float y = Utils.parseFloat(inputTY.getText());
+				float z = Utils.parseFloat(inputTZ.getText());
 				object3d.getPosition().setTranslation(x, y, z);
 				sceneEditor.makeDirty("move");
 			}
 		}
 	};
-
-	private static void setIfChangeFloat(Text input, float value) {
-		if (parseFloat(input.getText()) != value) {
-			input.setText("" + value);
-		}
-	}
-
-	private static float parseFloat(String text) {
-		try {
-			return Float.parseFloat(text);
-		} catch (Exception e) {
-			return 0;
-		}
-	}
 
 	private ModifyListener rotationListener = new ModifyListener() {
 
@@ -134,9 +118,9 @@ public class ObjectPropertiesView extends ViewPart {
 		public void modifyText(ModifyEvent arg0) {
 			Object3d object3d = ObjectPropertiesView.this.object3d;
 			if (object3d != null) {
-				float x = parseFloat(inputRX.getText());
-				float y = parseFloat(inputRY.getText());
-				float z = parseFloat(inputRZ.getText());
+				float x = Utils.parseFloat(inputRX.getText());
+				float y = Utils.parseFloat(inputRY.getText());
+				float z = Utils.parseFloat(inputRZ.getText());
 				object3d.getPosition().setEulerAngles(x, y, z);
 				sceneEditor.makeDirty("rotate");
 			}
@@ -147,9 +131,9 @@ public class ObjectPropertiesView extends ViewPart {
 		public void modifyText(ModifyEvent arg0) {
 			Object3d object3d = ObjectPropertiesView.this.object3d;
 			if (object3d != null) {
-				float x = parseFloat(inputSX.getText());
-				float y = parseFloat(inputSY.getText());
-				float z = parseFloat(inputSZ.getText());
+				float x = Utils.parseFloat(inputSX.getText());
+				float y = Utils.parseFloat(inputSY.getText());
+				float z = Utils.parseFloat(inputSZ.getText());
 				object3d.getPosition().setScale(x, y, z);
 				sceneEditor.makeDirty("scale");
 			}
@@ -179,32 +163,62 @@ public class ObjectPropertiesView extends ViewPart {
 	}
 
 	private void clear() {
-		for (Control control : parent.getChildren()) {
-			control.dispose();
-		}
+		Utils.clear(parent);
 	}
+	
 
 	private void rebuild(Object3d object3d, boolean editable) {
 		clear();
 		GridLayout layout = new GridLayout(1, false);
 		parent.setLayout(layout);
 		Group header = new Group(parent, SWT.NONE);
-		header.setLayoutData(fillGridHorizontal());
+		header.setLayoutData(Utils.fillGridHorizontal());
 		GridLayout headerLayout = new GridLayout(2, false);
 		header.setLayout(headerLayout);
 		new Label(header, SWT.NONE).setText("Object name:");
 		objectName = new Text(header, SWT.BORDER);
 		objectName.setText(object3d.getName());
-		objectName.setLayoutData(fillGridHorizontal());
+		objectName.setLayoutData(Utils.fillGridHorizontal());
 		objectName.setEnabled(editable);
 		objectName.addModifyListener(setNameListener);
 		rebuildPosition(object3d.getPosition(), editable);
 		rebuildProperties(object3d, editable);
+		
+		Group footer = new Group(parent, SWT.NONE);
+		footer.setLayoutData(Utils.fillGridHorizontal());
+		GridLayout footerLayout = new GridLayout(2, false);
+		footer.setLayout(footerLayout);
+		Button addProperty = new Button(footer, SWT.NONE);
+		addProperty.setText("Add property");
+		addProperty.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				
+				Menu menu = new Menu(addProperty);
+				MenuItem menuItem = new MenuItem(menu, SWT.NONE);
+				menuItem.setText("add Physic Body");
+				Rectangle bounds = addProperty.getBounds();
+
+			    Point point = addProperty.getParent().toDisplay(bounds.x, bounds.y + bounds.height);
+			    menu.setLocation(point);
+
+			    menu.setVisible(true);
+			}
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				
+				
+			}
+		});
+		Button savePrefab = new Button(footer, SWT.NONE);
+		savePrefab.setText("Save as prefab");
 	}
 
 	private void rebuildPosition(Position position, boolean editable) {
 		Group positionGroup = new Group(parent, SWT.NONE);
-		positionGroup.setLayoutData(fillGridHorizontal());
+		positionGroup.setLayoutData(Utils.fillGridHorizontal());
 		positionGroup.setText("Position");
 		GridLayout positionLayout = new GridLayout(7, false);
 		positionGroup.setLayout(positionLayout);
@@ -213,19 +227,19 @@ public class ObjectPropertiesView extends ViewPart {
 		new Label(positionGroup, SWT.NONE).setText("X");
 		inputTX = new Text(positionGroup, SWT.BORDER);
 		inputTX.setText("" + translation.x);
-		inputTX.setLayoutData(fillGridHorizontal());
+		inputTX.setLayoutData(Utils.fillGridHorizontal());
 		inputTX.addVerifyListener(floatInput);
 		inputTX.addModifyListener(positionListener);
 		new Label(positionGroup, SWT.NONE).setText("Y");
 		inputTY = new Text(positionGroup, SWT.BORDER);
 		inputTY.setText("" + translation.y);
-		inputTY.setLayoutData(fillGridHorizontal());
+		inputTY.setLayoutData(Utils.fillGridHorizontal());
 		inputTY.addVerifyListener(floatInput);
 		inputTY.addModifyListener(positionListener);
 		new Label(positionGroup, SWT.NONE).setText("Z");
 		inputTZ = new Text(positionGroup, SWT.BORDER);
 		inputTZ.setText("" + translation.z);
-		inputTZ.setLayoutData(fillGridHorizontal());
+		inputTZ.setLayoutData(Utils.fillGridHorizontal());
 		inputTZ.addVerifyListener(floatInput);
 		inputTZ.addModifyListener(positionListener);
 		Vector3f angles = position.getEulerAngles();
@@ -233,19 +247,19 @@ public class ObjectPropertiesView extends ViewPart {
 		new Label(positionGroup, SWT.NONE).setText("X");
 		inputRX = new Text(positionGroup, SWT.BORDER);
 		inputRX.setText("" + angles.x);
-		inputRX.setLayoutData(fillGridHorizontal());
+		inputRX.setLayoutData(Utils.fillGridHorizontal());
 		inputRX.addVerifyListener(floatInput);
 		inputRX.addModifyListener(rotationListener);
 		new Label(positionGroup, SWT.NONE).setText("Y");
 		inputRY = new Text(positionGroup, SWT.BORDER);
 		inputRY.setText("" + angles.y);
-		inputRY.setLayoutData(fillGridHorizontal());
+		inputRY.setLayoutData(Utils.fillGridHorizontal());
 		inputRY.addVerifyListener(floatInput);
 		inputRY.addModifyListener(rotationListener);
 		new Label(positionGroup, SWT.NONE).setText("Z");
 		inputRZ = new Text(positionGroup, SWT.BORDER);
 		inputRZ.setText("" + angles.z);
-		inputRZ.setLayoutData(fillGridHorizontal());
+		inputRZ.setLayoutData(Utils.fillGridHorizontal());
 		inputRZ.addVerifyListener(floatInput);
 		inputRZ.addModifyListener(rotationListener);
 		Vector3f scale = position.getScale();
@@ -253,20 +267,19 @@ public class ObjectPropertiesView extends ViewPart {
 		new Label(positionGroup, SWT.NONE).setText("X");
 		inputSX = new Text(positionGroup, SWT.BORDER);
 		inputSX.setText("" + scale.x);
-		inputSX.setLayoutData(fillGridHorizontal());
+		inputSX.setLayoutData(Utils.fillGridHorizontal());
 		inputSX.addVerifyListener(floatInput);
 		inputSX.addModifyListener(scaleListener);
 		new Label(positionGroup, SWT.NONE).setText("Y");
 		inputSY = new Text(positionGroup, SWT.BORDER);
 		inputSY.setText("" + scale.y);
-		inputSY.setLayoutData(fillGridHorizontal());
+		inputSY.setLayoutData(Utils.fillGridHorizontal());
 		inputSY.addVerifyListener(floatInput);
 		inputSY.addModifyListener(scaleListener);
-		inputSY.setEnabled(editable);
 		new Label(positionGroup, SWT.NONE).setText("Z");
 		inputSZ = new Text(positionGroup, SWT.BORDER);
 		inputSZ.setText("" + scale.z);
-		inputSZ.setLayoutData(fillGridHorizontal());
+		inputSZ.setLayoutData(Utils.fillGridHorizontal());
 		inputSZ.addVerifyListener(floatInput);
 		inputSZ.addModifyListener(scaleListener);
 	}
@@ -276,64 +289,15 @@ public class ObjectPropertiesView extends ViewPart {
 		for (Property3d property3d : object3d.getProperties()) {
 			if (property3d instanceof SelectionOverlay)
 				continue;
-			Group group = new Group(parent, SWT.NONE);
-			group.setLayoutData(fillGridHorizontal());
-			group.setText(property3d.getClass().getSimpleName());
-			GridLayout positionLayout = new GridLayout(2, false);
-			group.setLayout(positionLayout);
-			if(property3d instanceof MultiMesh){
-				try {
-					MultiMesh multiMesh = (MultiMesh) property3d;
-					new Label(group, SWT.NONE).setText("Mesh file:");
-					Combo meshSelector = new Combo(group, SWT.NONE);
-					SceneController sceneController = sceneEditor.getSceneController();
-					for(IResource file:sceneController.getModelFolder().members()){
-						meshSelector.add(file.getName());
-					}
-					meshSelector.setText(multiMesh.getFileName());
-					meshSelector.addSelectionListener(new SelectionAdapter() {							
-						@Override
-						public void widgetSelected(SelectionEvent e) {	
-							Combo combo = (Combo) e.getSource();
-							if((combo.getText()!=null)&&(!multiMesh.getFileName().equals(combo.getText()))){
-								ResourceController.getOrCreate().getOrLoadMesh(multiMesh, combo.getText());
-								sceneEditor.makeDirty("Mesh model change");
-							}
-						}
-					});
-					int num = 1;
-					for(Mesh mesh:multiMesh.getMeshes()){
-						new Label(group, SWT.NONE).setText("Material "+ (num++)+ ":");
-						Combo materialSelector = new Combo(group, SWT.NONE);
-						for(String material:sceneController.getScene().getMaterialLibrary().getMaterialNames()){
-							materialSelector.add(material);
-						}
-						materialSelector.setText(mesh.getMaterialName());
-						materialSelector.addSelectionListener(new SelectionAdapter() {							
-							@Override
-							public void widgetSelected(SelectionEvent e) {	
-								Combo combo = (Combo) e.getSource();
-								
-								if((combo.getText()!=null)&&(!mesh.getMaterialName().equals(combo.getText()))){
-									mesh.setMaterialName(combo.getText());
-									sceneEditor.makeDirty("Mesh material change");
-								}
-							}
-						});
-					}
-					
-				} catch (CoreException e) {
-					e.printStackTrace();
-				}
+			PropertyEditor group;
+			if(property3d instanceof MultiMesh){	
+				group = new MultiMeshEditor(parent, SWT.NONE, sceneEditor, object3d);
+			} else {
+				group = new PropertyEditor(parent, SWT.NONE, sceneEditor, object3d);
 			}
+			group.renew(property3d, editable);
+			propertiesPanels.put(property3d, group);	
 		}
-	}
-	
-	private GridData fillGridHorizontal() {
-		GridData gridData = new GridData();
-		gridData.horizontalAlignment = GridData.FILL;
-		gridData.grabExcessHorizontalSpace = true;
-		return gridData;
 	}
 
 	@Override
@@ -351,46 +315,42 @@ public class ObjectPropertiesView extends ViewPart {
 			scrolledComposite.layout(true, true);
 		}
 		if (object3d != null) {
-			
-			objectName.setText(object3d.getName());
+			Utils.setIfChangeString(objectName, object3d.getName());
 			
 			Position position = object3d.getPosition();
 			Vector3f translation = position.getTranslation();
-			setIfChangeFloat(inputTX, translation.x);
+			Utils.setIfChangeFloat(inputTX, translation.x);
 			inputTX.setEnabled(editable);
-			setIfChangeFloat(inputTY, translation.y);
+			Utils.setIfChangeFloat(inputTY, translation.y);
 			inputTY.setEnabled(editable);
-			setIfChangeFloat(inputTZ, translation.z);
+			Utils.setIfChangeFloat(inputTZ, translation.z);
 			inputTZ.setEnabled(editable);
 			Vector3f angles = position.getEulerAngles();
-			setIfChangeFloat(inputRX, angles.x);
+			Utils.setIfChangeFloat(inputRX, angles.x);
 			inputRX.setEnabled(editable);
-			setIfChangeFloat(inputRY, angles.y);
+			Utils.setIfChangeFloat(inputRY, angles.y);
 			inputRY.setEnabled(editable);
-			setIfChangeFloat(inputRZ, angles.z);
+			Utils.setIfChangeFloat(inputRZ, angles.z);
 			inputRZ.setEnabled(editable);
 			Vector3f scale = position.getScale();
-			setIfChangeFloat(inputSX, scale.x);
+			Utils.setIfChangeFloat(inputSX, scale.x);
 			inputSX.setEnabled(editable);
-			setIfChangeFloat(inputSY, scale.y);
+			Utils.setIfChangeFloat(inputSY, scale.y);
 			inputSY.setEnabled(editable);
-			setIfChangeFloat(inputSZ, scale.z);
+			Utils.setIfChangeFloat(inputSZ, scale.z);
 			inputSZ.setEnabled(editable);
-			
 			for(Property3d property3d:object3d.getProperties()){
-				Composite composite = propertiesPanels.get(property3d);
-				if(composite!=null) {
-					
-				}
+				PropertyEditor propertyEditor = propertiesPanels.get(property3d);
+				if(propertyEditor!=null)
+					propertyEditor.renew(property3d, editable);
+
 			}
-			//String properties = .stream().map(p -> p.getClass().getSimpleName())
-			//		.collect(Collectors.joining(","));
-			//objectProperties.setText(properties);
+			scrolledComposite.layout(true, true);
 		} else {
 			clear();
 			Label label = new Label(parent, SWT.BORDER);
 			label.setText("Select object or material first");
-			label.setLayoutData(fillGridHorizontal());
+			label.setLayoutData(Utils.fillGridHorizontal());
 			scrolledComposite.layout(true, true);
 		}
 		this.object3d = object3d;

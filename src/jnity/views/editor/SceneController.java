@@ -83,7 +83,25 @@ public class SceneController {
 	public Camera getCamera() {
 		return camera;
 	}
-
+	public void loadSceneWithoutCamera(InputStream inputStream) {
+		ObjectInputStream ois;
+		try {
+			ResourceController.getOrCreate().setTexturesPath(textureFolder.getLocation().toString() + "/");
+			ResourceController.getOrCreate().setModelPath(modelFolder.getLocation().toString() + "/");
+			ClassLoader classLoader = getClassLoader();
+			ois = new ClassLoaderObjectInputStream(classLoader, inputStream);
+			scene = (Scene) ois.readObject();
+			ois.close();
+			if (selected != null) {
+				int id = selected.getID();
+				selected = scene.getByID(id);
+			}
+			openContentStream();
+		} catch (Exception e) {
+			scene = new Scene();
+			e.printStackTrace();
+		}
+	}
 	public void loadScene(InputStream inputStream) {
 		ObjectInputStream ois;
 		try {
@@ -93,7 +111,6 @@ public class SceneController {
 			ois = new ClassLoaderObjectInputStream(classLoader, inputStream);
 			scene = (Scene) ois.readObject();
 			camera = (Camera) ois.readObject();
-			printChildren("", scene.getRoot());
 			ois.close();
 			if (selected != null) {
 				int id = selected.getID();

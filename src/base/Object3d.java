@@ -154,6 +154,7 @@ public class Object3d implements Serializable, FastCloneable {
 	}
 
 	public void render(RenderContex renderContex) {
+		//class.getMethod("myMethod").getDeclaringClass();
 		if (!visible)
 			return;
 		position.apply();

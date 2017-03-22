@@ -35,14 +35,14 @@ public class UndoableOperation extends AbstractOperation {
 
 	@Override
 	public IStatus redo(IProgressMonitor monitor, IAdaptable info) throws ExecutionException {
-		sceneController.loadScene(contentStream);
+		sceneController.loadSceneWithoutCamera(contentStream);
 		return Status.OK_STATUS;
 		
 	}
 
 	@Override
 	public IStatus undo(IProgressMonitor monitor, IAdaptable info) throws ExecutionException {
-		sceneController.loadScene(previousContentStream);
+		sceneController.loadSceneWithoutCamera(previousContentStream);
 		return Status.OK_STATUS;
 	}
 
