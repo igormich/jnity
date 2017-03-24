@@ -10,11 +10,10 @@ public interface Property3d extends FastCloneable {
 		return false;
 	}
 
-	// adding to owner
+	// adding to owner or after scene load and before first tick call
 	default void register(Object3d owner) {
 		// DO NOTHING
 	}
-
 	// remove from owner
 	default void unRegister(Object3d owner) {
 		// DO NOTHING
@@ -41,4 +40,8 @@ public interface Property3d extends FastCloneable {
 	}
 
 	Property3d fastClone();
+
+	default boolean isTransient() {
+		return false;
+	}
 }

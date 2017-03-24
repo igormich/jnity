@@ -56,13 +56,14 @@ import base.Camera;
 import base.Object3d;
 import io.ResourceController;
 import jnity.SampleHandler;
+import jnity.properties.SelectionOverlay;
 import jnity.views.editor.ClipboardUtils;
 import jnity.views.editor.ProjectResourseListener;
 import jnity.views.editor.SceneController;
 import jnity.views.editor.SceneDropTarget;
 import jnity.views.editor.SceneEditorListener;
 import jnity.views.editor.UndoableOperation;
-import properties.SelectionOverlay;
+import physics.PhysicController;
 
 public class SceneEditor extends EditorPart {
 
@@ -303,30 +304,6 @@ public class SceneEditor extends EditorPart {
 
 	private void initControls(Composite parent) {
 
-		SelectionListener listener = new SelectionAdapter() {
-
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				Button sourse = (Button) e.getSource();
-				switch (sourse.getText()) {
-				case "Play":
-					sceneController.play();
-					break;
-				case "Pause":
-					sceneController.pause();
-					break;
-				case "Stop":
-					sceneController.stop();
-					break;
-				case "Rebase":
-					sceneController.rebase();
-					break;
-				default:
-					break;
-				}
-				setObjectToEdit();
-			}
-		};
 		GridData gridData = new GridData();
 		gridData.horizontalAlignment = GridData.FILL;
 		gridData.grabExcessHorizontalSpace = true;
@@ -336,16 +313,64 @@ public class SceneEditor extends EditorPart {
 		control.setLayout(new RowLayout());
 		Button play = new Button(control, SWT.CENTER);
 		play.setText("Play");
-		play.addSelectionListener(listener);
+		
 		Button pause = new Button(control, SWT.CENTER);
 		pause.setText("Pause");
-		pause.addSelectionListener(listener);
+		
 		Button stop = new Button(control, SWT.CENTER);
 		stop.setText("Stop");
-		stop.addSelectionListener(listener);
+		
 		Button rebase = new Button(control, SWT.CENTER);
 		rebase.setText("Rebase");
+		
+		SelectionListener listener = new SelectionAdapter() {
+
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				Button sourse = (Button) e.getSource();
+				switch (sourse.getText()) {
+				case "Play":
+					sceneController.play();
+					play.setEnabled(false);
+					pause.setEnabled(true);
+					stop.setEnabled(true);
+					rebase.setEnabled(true);
+					break;
+				case "Resume":
+				case "Pause":
+					sceneController.pause();
+					pause.setText(sceneController.isPlaying() ? "Pause" : "Resume");
+					break;
+				case "Stop":
+					sceneController.stop();
+					play.setEnabled(true);
+					pause.setEnabled(false);
+					pause.setText("Pause");
+					stop.setEnabled(false);
+					rebase.setEnabled(false);
+					break;
+				case "Rebase":
+					sceneController.rebase();
+					play.setEnabled(true);
+					pause.setEnabled(false);
+					pause.setText("Pause");
+					stop.setEnabled(false);
+					rebase.setEnabled(false);
+					break;
+				default:
+					break;
+				}
+				setObjectToEdit();
+			}
+		};
+		
+		play.addSelectionListener(listener);
+		pause.addSelectionListener(listener);
+		pause.setEnabled(false);
+		stop.addSelectionListener(listener);
+		stop.setEnabled(false);
 		rebase.addSelectionListener(listener);
+		rebase.setEnabled(false);
 	}
 
 	private void initDropTarget() {
@@ -369,6 +394,7 @@ public class SceneEditor extends EditorPart {
 					try {
 						GLContext.useContext(canvas);
 						if (sceneController.isPlaying()) {
+							PhysicController.getDefault().step(delta, 100);
 							sceneController.getScene().tick(delta);
 							setObjectToEdit();
 						}

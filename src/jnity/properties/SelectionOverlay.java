@@ -1,12 +1,13 @@
-package properties;
+package jnity.properties;
 
 import static org.lwjgl.opengl.GL11.*;
 
 
 import base.Object3d;
 import base.RenderContex;
+import properties.Property3d;
 
-public class SelectionOverlay implements Property3d {
+public class SelectionOverlay implements EditorProperty {
 
 	@Override
 	public Property3d fastClone() {

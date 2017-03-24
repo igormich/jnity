@@ -1,21 +1,18 @@
 package physics;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.Serializable;
 
 import javax.vecmath.Vector3f;
-
-import properties.Mesh;
-import properties.MultiMesh;
-import properties.Property3d;
-import base.Object3d;
 
 import com.bulletphysics.collision.dispatch.CollisionFlags;
 import com.bulletphysics.collision.shapes.CollisionShape;
 import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.linearmath.Transform;
 
-public class AbstractCollisionBody implements Property3d{
+import base.Object3d;
+import properties.Property3d;
+
+public abstract class AbstractCollisionBody implements Property3d, Serializable{
 	/**
 	 * 
 	 */
@@ -27,14 +24,13 @@ public class AbstractCollisionBody implements Property3d{
 	public static final Vector3f NO_INERTIA = ZERO_VECTOR;
 	
 	
-	protected CollisionShape shape = null;
+	protected transient CollisionShape shape = null;
 	protected float mass = 0;
 	protected float friction = 1;
 	protected boolean grost = false;
 	protected Vector3f inertia=FULL_INERTIA;
 	private boolean gravity = true;
-	private Map<Object3d, RigidBody> rigidBody=new HashMap<Object3d,RigidBody>();
-	private PhysicController physicController;
+	private transient RigidBody rigidBody;
 	
 	@Override
 	public boolean isUnique() {
@@ -45,24 +41,25 @@ public class AbstractCollisionBody implements Property3d{
 		init(owner);			
 	}
 	@Override
+	public void unRegister(Object3d owner) {
+		getPhysicController().removeBody(owner);		
+	}
+	@Override
 	public void tick(float deltaTime,float time,Object3d owner) {
 		float[] matrix = owner.getPosition().getAbsoluteMatrixAsArray();
 		Transform transform = new Transform();
 		transform.setFromOpenGLMatrix(matrix);
-		rigidBody.get(owner).getWorldTransform(transform);
-	}
-	public AbstractCollisionBody(PhysicController physicController) {
-		this.physicController = physicController;
+		rigidBody.getWorldTransform(transform);
 	}
 	public AbstractCollisionBody() {
-		this(PhysicController.getDefault());
 	}
 	public float getMass() {
 		return mass;
 	}
 	public AbstractCollisionBody setMass(float mass) {
 		this.mass = mass;
-		rigidBody.values().forEach(rb ->rb.setMassProps(mass, inertia));		
+		if(rigidBody!=null)
+			rigidBody.setMassProps(mass, inertia);		
 		return this;
 	}
 	public float getFriction() {
@@ -80,9 +77,9 @@ public class AbstractCollisionBody implements Property3d{
 		if(rigidBody!=null)
 		{
 			if(grost)
-				rigidBody.values().forEach(rb ->rb.setCollisionFlags(CollisionFlags.NO_CONTACT_RESPONSE));
+				rigidBody.setCollisionFlags(CollisionFlags.NO_CONTACT_RESPONSE);
 			else
-				rigidBody.values().forEach(rb ->rb.setCollisionFlags(CollisionFlags.KINEMATIC_OBJECT));
+				rigidBody.setCollisionFlags(CollisionFlags.KINEMATIC_OBJECT);
 		}
 		return this;
 	}
@@ -91,7 +88,8 @@ public class AbstractCollisionBody implements Property3d{
 	}
 	public AbstractCollisionBody setInertia(Vector3f inertia) {
 		this.inertia = inertia;
-		rigidBody.values().forEach(rb ->rb.setMassProps(mass, inertia));	
+		if(rigidBody!=null)
+			rigidBody.setMassProps(mass, inertia);	
 		return this;
 	}
 	public CollisionShape getShape() {
@@ -105,44 +103,51 @@ public class AbstractCollisionBody implements Property3d{
 		if(rigidBody!=null)
 		{
 			if(gravity)
-				rigidBody.values().forEach(rb ->rb.setGravity(physicController.getGravity()));
+				rigidBody.setGravity(getPhysicController().getGravity());
 		    else
-		    	rigidBody.values().forEach(rb ->rb.setGravity(PhysicController.ZERO_GRAVIRY));
+		    	rigidBody.setGravity(PhysicController.ZERO_GRAVIRY);
 		}
 		return this;
 	}
+	private PhysicController getPhysicController() {
+		return PhysicController.getDefault();
+	}
 	protected void init(Object3d owner) {
-		rigidBody.put(owner, physicController.addBody(this, owner));
+		rigidBody = getPhysicController().addBody(this, owner);
 	}
-	public void stopLinearVelocity(Object3d owner) {
-		rigidBody.get(owner).setLinearVelocity(ZERO_VECTOR);
+	public void stopLinearVelocity() {
+		if(rigidBody!=null)
+			rigidBody.setLinearVelocity(ZERO_VECTOR);
 	}
-	public void stopAngularVelocity(Object3d owner) {
-		rigidBody.get(owner).setAngularVelocity(ZERO_VECTOR);
+	public void stopAngularVelocity() {
+		if(rigidBody!=null)
+			rigidBody.setAngularVelocity(ZERO_VECTOR);
 	}
 	
-	public void applyCentralImpulse(Object3d owner,Vector3f impulse) {
-		rigidBody.get(owner).applyCentralImpulse(impulse);
+	public void applyCentralImpulse(Vector3f impulse) {
+		if(rigidBody!=null)
+			rigidBody.applyCentralImpulse(impulse);
 	}
 	public void applyCentralImpulse(Object3d owner,
 			org.lwjgl.util.vector.Vector3f vec) {
-		applyCentralImpulse(owner,new Vector3f(vec.x,vec.y,vec.z));
+		applyCentralImpulse(new Vector3f(vec.x,vec.y,vec.z));
 		
 		
 	}
-	public void applyCentralForce(Object3d owner,Vector3f force) {
-		rigidBody.get(owner).applyCentralForce(force);
+	public void applyCentralForce(Vector3f force) {
+		if(rigidBody!=null)
+			rigidBody.applyCentralForce(force);
 	}
 	public void applyCentralForce(Object3d owner,
 			org.lwjgl.util.vector.Vector3f vec) {
-		applyCentralImpulse(owner,new Vector3f(vec.x,vec.y,vec.z));	
+		applyCentralImpulse(new Vector3f(vec.x,vec.y,vec.z));	
 	}
-	public org.lwjgl.util.vector.Vector3f getSpeed(Object3d owner){
-		Vector3f temp = rigidBody.get(owner).getLinearVelocity(new Vector3f());
+	public org.lwjgl.util.vector.Vector3f getSpeed(){
+		Vector3f temp = rigidBody.getLinearVelocity(new Vector3f());
 		return new org.lwjgl.util.vector.Vector3f(temp.x, temp.y, temp.z);
 	}
 	@Override
 	public Property3d fastClone() {
-		return null;
+		return this;
 	}
 }

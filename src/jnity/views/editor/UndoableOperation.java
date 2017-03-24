@@ -14,7 +14,6 @@ import org.eclipse.core.runtime.Status;
 
 public class UndoableOperation extends AbstractOperation {
 
-
 	private InputStream previousContentStream;
 	private InputStream contentStream;
 	private SceneController sceneController;

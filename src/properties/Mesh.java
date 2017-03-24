@@ -101,10 +101,10 @@ public class Mesh extends AbstaractMesh {
 		}
 		glEnd();
 		glEndList();
-		vert.clear();
+		/*vert.clear();
 		color.clear();
 		normals.clear();
-		tex.clear();
+		tex.clear();*/
 		isPrepared = true;
 	}
 

@@ -17,7 +17,7 @@ public abstract class MeshCollisionBody extends AbstractCollisionBody {
 			if(triangleStrip == null)
 				triangleStrip = owner.get(MultiMesh.class);
 			if(triangleStrip != null){
-				init(triangleStrip,owner);			
+				init(triangleStrip, owner);			
 			}
 		}
 	}

@@ -34,7 +34,7 @@ public class ProjectResourseListener implements IResourceChangeListener {
 			String patch = resource.getProjectRelativePath().toString();
 			// if (delta.getKind() == IResourceDelta.CHANGED)
 			// System.out.println("CHANGED");
-			System.out.print(patch);
+			//System.out.print(patch);
 			switch (delta.getKind()) {
 			case IResourceDelta.CHANGED:
 				System.out.println(" CHANGED");

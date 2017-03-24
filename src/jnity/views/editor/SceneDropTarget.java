@@ -21,6 +21,7 @@ import org.lwjgl.util.vector.Vector3f;
 
 import base.Object3d;
 import base.Position;
+import base.Scene;
 import io.MeshLoaderOBJ;
 import io.MeshLoaderSMD;
 import io.ResourceController;
@@ -32,7 +33,7 @@ import properties.Property3d;
 
 public class SceneDropTarget extends DropTargetAdapter {
 	enum DropType {
-		TEXTURE, MODEL, JAVA_CLASS, UNDEFINED
+		TEXTURE, MODEL, JAVA_CLASS, PREFAB, UNDEFINED
 	}
 
 	private SceneController sceneController;
@@ -59,7 +60,9 @@ public class SceneDropTarget extends DropTargetAdapter {
 				case MODEL:
 					dropModel(event);
 					break;
-
+				case PREFAB:
+					dropPrefab(event);
+					break;
 				default:
 					break;
 				}
@@ -112,7 +115,29 @@ public class SceneDropTarget extends DropTargetAdapter {
 		target.add(property3d);
 		sceneEditor.makeDirty("add Propert");
 	}
-
+	private void dropPrefab(DropTargetEvent event) throws CoreException, FileNotFoundException, IOException, ClassNotFoundException {
+		File f = null;
+		if (ResourceTransfer.getInstance().isSupportedType(event.currentDataType)) {
+			IResource[] resources = (IResource[]) event.data;
+			IResource resource = resources[0];
+			if (!resource.getProject().equals(sceneController.getProject()))
+				return;
+			f = resource.getLocation().toFile();
+		}
+		
+		ClassLoader classLoader = sceneController.getClassLoader();
+		try(ClassLoaderObjectInputStream ois = new ClassLoaderObjectInputStream(classLoader, new FileInputStream(f))){
+			Object3d object3d  = (Object3d) ois.readObject();
+			String shortName = f.getName();
+			object3d.setName(shortName.substring(0,shortName.lastIndexOf('.')) + object3d.getID());
+			sceneController.getScene().add(object3d);
+			Position position = object3d.resetPosition();
+			Position cameraPosition = sceneController.getCamera().getPosition();
+			position.setTranslation(cameraPosition.getTranslation());
+			position.move((Vector3f) cameraPosition.getFrontVector().negate().scale(5));
+		}
+	}
+	
 	private void dropModel(DropTargetEvent event) throws FileNotFoundException, CoreException {
 		ResourceController.getOrCreate().setModelPath(sceneController.getModelFolder().getLocation().toString() + "/");
 		File f = null;
@@ -138,6 +163,7 @@ public class SceneDropTarget extends DropTargetAdapter {
 		if (shortName.endsWith(".obj"))
 			multiMesh = MeshLoaderOBJ.loadMultiMesh(shortName);
 		Object3d object3d = sceneController.getScene().add(multiMesh);
+		object3d.setName(shortName.substring(0,shortName.lastIndexOf('.')) + object3d.getID());
 		Position position = object3d.getPosition();
 		Position cameraPosition = sceneController.getCamera().getPosition();
 		position.setTranslation(cameraPosition.getTranslation());
@@ -150,7 +176,7 @@ public class SceneDropTarget extends DropTargetAdapter {
 		String shortName = f.getName();
 		IFile newFile = folder.getFile(new Path(shortName));
 		if (newFile.exists()) {
-			MessageDialog dialog = new MessageDialog(null, "Title", null, "Replace " + shortName + " ?",
+			MessageDialog dialog = new MessageDialog(null, "Replace", null, "Replace existing file " + shortName + " ?",
 					MessageDialog.QUESTION, new String[] { "Yes", "No" }, 0);
 			int result = dialog.open();
 			if (result == 1)
@@ -216,6 +242,8 @@ public class SceneDropTarget extends DropTargetAdapter {
 				return DropType.MODEL;
 			if (resourceName.equals("java"))
 				return DropType.JAVA_CLASS;
+			if (resourceName.equals("prefab"))
+				return DropType.PREFAB;
 		}
 		return DropType.UNDEFINED;
 	}

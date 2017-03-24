@@ -205,7 +205,17 @@ public class Position implements Applyable, Serializable {
 	}
 
 	public synchronized void setAbsoluteMatrixAsArray(float[] array) {
-		throw new UnsupportedOperationException();
+		FloatBuffer buff = BufferUtils.createFloatBuffer(16);
+		Matrix4f matrix = new Matrix4f();
+		buff.put(array);
+		buff.flip();
+		matrix.load(buff);
+		if((owner!=null) && (owner.getParent()!=null)) {
+			rebuildRelativeTo(matrix, owner.getParent().getPosition());
+		} else {
+			setMatrix(matrix);
+		}
+		//throw new UnsupportedOperationException();
 	}
 
 	public Matrix4f getAbsoluteMatrix() {
@@ -295,12 +305,7 @@ public class Position implements Applyable, Serializable {
 
 	public Position fastClone(Object3d owner) {
 		Position result = new Position(owner);
-		result.position = new Vector3f(position);
-		result.turn = turn;
-		result.roll = roll;
-		result.pitch = pitch;
-		result.scale = new Vector3f(scale);
-		result.absolyte = absolyte;
+		result.setMatrix(getAbsoluteMatrix());
 		return result;
 	}
 
@@ -359,16 +364,14 @@ public class Position implements Applyable, Serializable {
 
 		return dest;
 	}
-
-	public Position rebuildRelativeTo(Position parent) {
-		Matrix4f absoluteMatrix = getAbsoluteMatrix();
+	public Position rebuildRelativeTo(Matrix4f absoluteMatrix, Position parent) {
 		Matrix4f parentAbsoluteMatrix = parent.getAbsoluteMatrix();
 		Matrix4f matrix = Matrix4f.mul((Matrix4f)parentAbsoluteMatrix.invert(), absoluteMatrix, new Matrix4f());
-		matrix.store(cash);
-		cash.flip();
-		cashed = true;
 		this.setMatrix(matrix);
 		return this;
+	}
+	public Position rebuildRelativeTo(Position parent) {
+		return rebuildRelativeTo(getAbsoluteMatrix(), parent);
 	}
 	public Vector3f getEulerAnglesZYX(Matrix4f m) {
 		Vector3f dest = new Vector3f();
@@ -381,7 +384,7 @@ public class Position implements Applyable, Serializable {
 		position.x = matrix.m30;
 		position.y = matrix.m31;
 		position.z = matrix.m32;
-
+		
         Vector3f angles = getEulerAnglesZYX(matrix);
 		
 		this.turn = radToGrad(angles.y);

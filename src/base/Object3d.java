@@ -2,6 +2,14 @@ package base;
 
 import static org.lwjgl.opengl.GL11.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,13 +18,11 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import properties.Property3d;
-import properties.SelectionOverlay;
+import jnity.properties.EditorProperty;
+import jnity.properties.SelectionOverlay;
 
-public class Object3d implements Serializable, FastCloneable {
+public class Object3d implements Externalizable, FastCloneable {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 906802098539655519L;
 	static final AtomicInteger idCounter = new AtomicInteger(1);
 	private final int id = idCounter.getAndIncrement();
@@ -33,8 +39,11 @@ public class Object3d implements Serializable, FastCloneable {
 	public String toString() {
 		return name;
 	}
-
+	public Object3d() {
+		setName("Object " + getID());
+	}
 	public Object3d(Property3d... properties) {
+		setName("Object " + getID());
 		for (Property3d property : properties)
 			add(property);
 	}
@@ -107,7 +116,6 @@ public class Object3d implements Serializable, FastCloneable {
 				int index = properties.indexOf(propertyForReplace.get());
 				Property3d oldProperty = properties.get(index);
 				oldProperty.unRegister(this);
-				;
 				property.register(this);
 				properties.set(index, property);
 			} else {
@@ -126,7 +134,12 @@ public class Object3d implements Serializable, FastCloneable {
 				.forEach(property -> property.unRegister(this));
 		properties.removeIf(property -> property.getClass().equals(type));
 	}
-
+	private void removeAll(Class<EditorProperty> type) {
+		properties.stream().filter(property -> property.getClass().isInstance(type))
+		.forEach(property -> property.unRegister(this));
+		properties.removeIf(property -> property.getClass().isInstance(type));
+		
+	}
 	public void remove(Property3d property) {
 		property.unRegister(this);
 		properties.remove(property);
@@ -214,8 +227,10 @@ public class Object3d implements Serializable, FastCloneable {
 		Object3d result = new Object3d();
 		result.position = position.fastClone(result);
 		result.visible = visible;
-		result.remove(SelectionOverlay.class);
-		properties.forEach(property -> result.add(property.fastClone()));
+		properties.stream()
+			.map(property -> property.fastClone())
+			.filter(property -> property!=null)
+			.forEach(property -> result.add(property));
 		getChildren().forEach(child -> result.addChild(child.fastClone()));
 		result.position.invalidate();
 		return result;
@@ -267,5 +282,59 @@ public class Object3d implements Serializable, FastCloneable {
 		int index = children.indexOf(target);
 		children.add(index + 1, object3d);
 		return this;
+	}
+
+	public InputStream saveSingle() {
+		try {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(baos);
+			Object3d toSave = fastClone();
+			toSave.resetPosition();
+			oos.writeObject(toSave);
+			oos.flush();
+			oos.close();
+			oos.flush();
+			oos.close();
+			
+			return new ByteArrayInputStream(baos.toByteArray());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return new ByteArrayInputStream(new byte[] {});
+	}
+
+	public void postLoad() {
+		position.apply();
+		getChildren().forEach(child -> child.postLoad());
+		properties.forEach(property -> property.register(this));
+		position.unApply();
+		
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeUTF(name);
+		out.writeObject(position);
+		ArrayList<Property3d> propertiesToSave = new ArrayList<Property3d>();
+		propertiesToSave.addAll(properties);
+		propertiesToSave.removeIf(property -> property.isTransient());
+		out.writeObject(propertiesToSave);
+		out.writeObject(parent);
+		out.writeObject(children);
+		out.writeFloat(hideDistance);
+		out.writeBoolean(visible);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		name = in.readUTF();
+		position = (Position) in.readObject();
+		properties = (List<Property3d>) in.readObject();
+		parent = (Object3d) in.readObject();	
+		children = (List<Object3d>) in.readObject();
+		hideDistance = in.readFloat();
+		visible = in.readBoolean();
+		
 	}
 }

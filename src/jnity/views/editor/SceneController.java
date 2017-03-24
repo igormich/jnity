@@ -29,20 +29,22 @@ import base.Camera;
 import base.Object3d;
 import base.Scene;
 import io.ResourceController;
+import jnity.properties.SelectionOverlay;
 import materials.HashMapMaterialLibrary;
 import materials.MaterialLibrary;
 import materials.SimpleMaterial;
+import physics.PhysicController;
 import properties.MultiMesh;
 import properties.Property3d;
-import properties.SelectionOverlay;
 
 public class SceneController {
 	private Object3d selected;
 	private Object3d underCursor;
-	private Scene scene;
-	private Camera camera;
+	private Scene scene = new Scene();
+	private Camera camera = new Camera();
 	private IFolder textureFolder;
 	private IFolder modelFolder;
+	private IFolder prefabFolder;
 	private IProject project;
 	private ProjectResourseListener projectResourseListener;
 	private boolean playing = false;
@@ -53,24 +55,25 @@ public class SceneController {
 		return playing;
 	}
 
-	public void play() {
+	public synchronized void play() {
 		playing = true;
 		baseState = openContentStream();
 	}
 
-	public void pause() {
-		playing = false;
+	public synchronized void pause() {
+		playing = !playing;
 	}
 
-	public void stop() {
+	public synchronized void stop() {
 		playing = false;
-		loadScene(baseState);
+		loadSceneWithoutCamera(baseState);
 	}
-	
-	public void rebase() {
+
+	public synchronized void rebase() {
 		playing = false;
 		baseState = openContentStream();
 	}
+
 	public SceneController(ProjectResourseListener sceneResourseController) {
 		this.projectResourseListener = sceneResourseController;
 		this.projectResourseListener.setSceneController(this);
@@ -83,8 +86,10 @@ public class SceneController {
 	public Camera getCamera() {
 		return camera;
 	}
+
 	public void loadSceneWithoutCamera(InputStream inputStream) {
 		ObjectInputStream ois;
+		PhysicController.getDefault().clear();
 		try {
 			ResourceController.getOrCreate().setTexturesPath(textureFolder.getLocation().toString() + "/");
 			ResourceController.getOrCreate().setModelPath(modelFolder.getLocation().toString() + "/");
@@ -102,8 +107,10 @@ public class SceneController {
 			e.printStackTrace();
 		}
 	}
+
 	public void loadScene(InputStream inputStream) {
 		ObjectInputStream ois;
+		PhysicController.getDefault().clear();
 		try {
 			ResourceController.getOrCreate().setTexturesPath(textureFolder.getLocation().toString() + "/");
 			ResourceController.getOrCreate().setModelPath(modelFolder.getLocation().toString() + "/");
@@ -142,19 +149,13 @@ public class SceneController {
 		try {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			ObjectOutputStream oos = new ObjectOutputStream(baos);
-			if (selected != null) {
-				selected.remove(SelectionOverlay.class);
-			}
-			printChildren("", scene.getRoot());
+			//printChildren("", scene.getRoot());
 			oos.writeObject(getScene());
 			oos.writeObject(getCamera());
 			oos.flush();
 			oos.close();
 			oos.flush();
 			oos.close();
-			if (selected != null) {
-				selected.add(new SelectionOverlay());
-			}
 			previousContent = baos.toByteArray();
 			return new ByteArrayInputStream(previousContent);
 		} catch (Exception e) {
@@ -178,7 +179,9 @@ public class SceneController {
 		modelFolder = project.getFolder("models");
 		if (!modelFolder.exists())
 			modelFolder.create(IResource.NONE, true, null);
-
+		prefabFolder = project.getFolder("prefabs");
+		if (!prefabFolder.exists())
+			prefabFolder.create(IResource.NONE, true, null);
 	}
 
 	public Object3d getSelectedObject() {
@@ -239,6 +242,10 @@ public class SceneController {
 		return textureFolder;
 	}
 
+	public IFolder getPrefabFolder() {
+		return prefabFolder;
+	}
+
 	public void setUnderCursorObject(Object3d object) {
 		underCursor = object;
 	}
@@ -292,7 +299,5 @@ public class SceneController {
 			return classLoader.loadClass(classPath);
 		}
 	}
-
-
 
 }

@@ -48,6 +48,7 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 
+import materials.HashMapMaterialLibrary;
 import materials.Material;
 import materials.MaterialLibrary;
 import materials.SimpleMaterial;
@@ -178,7 +179,7 @@ public class Scene implements Externalizable{
 	private transient List<TransparentContainer> transparentPool=new ArrayList<TransparentContainer>();
 	private float time;
 	private Vector3f backColor = new Vector3f();
-	private MaterialLibrary materialLibrary;
+	private MaterialLibrary materialLibrary = new HashMapMaterialLibrary();
 	
 	public Object3d add(Object3d object3d){
 		Object3d parent = object3d.getParent();
@@ -311,6 +312,7 @@ public class Scene implements Externalizable{
 		root = (Object3d) in.readObject();
 		materialLibrary = (MaterialLibrary) in.readObject();
 		Object3d.idCounter.set(in.readInt()+1);
+		root.postLoad();
 	}
 	public void setMaterialLibrary(MaterialLibrary materialLibrary) {
 		this.materialLibrary = materialLibrary;

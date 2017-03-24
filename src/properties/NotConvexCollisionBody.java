@@ -23,7 +23,7 @@ public class NotConvexCollisionBody extends MeshCollisionBody {
 	 */
 	private static final long serialVersionUID = -645636410514059738L;
 
-	public void init(TriangleStrip triangleMesh,Object3d owner) {
+	public void init(TriangleStrip triangleMesh, Object3d owner) {
 		int size=triangleMesh.getSize();
 		IndexedMesh im=new IndexedMesh();
 		im.indexType=ScalarType.INTEGER;
@@ -47,7 +47,7 @@ public class NotConvexCollisionBody extends MeshCollisionBody {
 		TriangleIndexVertexArray tiva=new TriangleIndexVertexArray(
 				im.numTriangles,im.triangleIndexBase,im.triangleIndexStride,
 				im.numVertices,im.vertexBase,im.vertexStride);
-		shape=new BvhTriangleMeshShape(tiva,true);
+		shape = new BvhTriangleMeshShape(tiva,true);
 		super.init(owner);
 	}
 }

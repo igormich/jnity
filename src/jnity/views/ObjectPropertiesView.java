@@ -1,9 +1,14 @@
 package jnity.views;
 
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.MenuEvent;
@@ -29,11 +34,13 @@ import org.lwjgl.util.vector.Vector3f;
 
 import base.Object3d;
 import base.Position;
+import jnity.properties.SelectionOverlay;
+import jnity.views.editor.SceneController;
 import jnity.views.properties.MultiMeshEditor;
+import jnity.views.properties.PropertieAdder;
 import jnity.views.properties.PropertyEditor;
 import properties.MultiMesh;
 import properties.Property3d;
-import properties.SelectionOverlay;
 
 public class ObjectPropertiesView extends ViewPart {
 
@@ -41,14 +48,12 @@ public class ObjectPropertiesView extends ViewPart {
 	 * The ID of the view as specified by the extension.
 	 */
 
-	
 	private static WeakReference<ObjectPropertiesView> instance = new WeakReference<ObjectPropertiesView>(null);
 
 	public static final String ID = "jnity.views.ObjectPropertiesView";
-	
-	
+
 	private Map<Property3d, PropertyEditor> propertiesPanels = new HashMap<>();
-	
+
 	private Text inputTX;
 	private Text inputTY;
 	private Text inputTZ;
@@ -157,7 +162,7 @@ public class ObjectPropertiesView extends ViewPart {
 
 	public void createPartControl(Composite owner) {
 		scrolledComposite = new ScrolledComposite(owner, SWT.V_SCROLL | SWT.H_SCROLL);
-		scrolledComposite.setExpandHorizontal(true);  
+		scrolledComposite.setExpandHorizontal(true);
 		parent = new Composite(scrolledComposite, SWT.WRAP);
 		scrolledComposite.setContent(parent);
 	}
@@ -165,7 +170,6 @@ public class ObjectPropertiesView extends ViewPart {
 	private void clear() {
 		Utils.clear(parent);
 	}
-	
 
 	private void rebuild(Object3d object3d, boolean editable) {
 		clear();
@@ -183,7 +187,7 @@ public class ObjectPropertiesView extends ViewPart {
 		objectName.addModifyListener(setNameListener);
 		rebuildPosition(object3d.getPosition(), editable);
 		rebuildProperties(object3d, editable);
-		
+
 		Group footer = new Group(parent, SWT.NONE);
 		footer.setLayoutData(Utils.fillGridHorizontal());
 		GridLayout footerLayout = new GridLayout(2, false);
@@ -191,29 +195,52 @@ public class ObjectPropertiesView extends ViewPart {
 		Button addProperty = new Button(footer, SWT.NONE);
 		addProperty.setText("Add property");
 		addProperty.addSelectionListener(new SelectionListener() {
-			
+
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				
-				Menu menu = new Menu(addProperty);
-				MenuItem menuItem = new MenuItem(menu, SWT.NONE);
-				menuItem.setText("add Physic Body");
-				Rectangle bounds = addProperty.getBounds();
-
-			    Point point = addProperty.getParent().toDisplay(bounds.x, bounds.y + bounds.height);
-			    menu.setLocation(point);
-
-			    menu.setVisible(true);
+				new PropertieAdder(addProperty, object3d, sceneEditor);
 			}
-			
+
 			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {
-				
-				
+
 			}
 		});
 		Button savePrefab = new Button(footer, SWT.NONE);
 		savePrefab.setText("Save as prefab");
+		savePrefab.addSelectionListener(new SelectionListener() {
+
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				SceneController sceneController = sceneEditor.getSceneController();
+				IFolder prefabs = sceneController.getPrefabFolder();
+				IFile file = prefabs.getFile(object3d.getName() + ".prefab");
+				
+				if (file.exists()){
+					MessageDialog dialog = new MessageDialog(null, "Replace", null, "Replace existing prefab" + object3d.getName() + " ?",
+							MessageDialog.QUESTION, new String[] { "Yes", "No" }, 0);
+					int result = dialog.open();
+					if (result == 1)
+						return;
+				}
+				InputStream stream = object3d.saveSingle();
+				try {
+					if (file.exists()) {
+						file.setContents(stream, true, true, null);
+					} else {
+						file.create(stream, true, null);
+					}
+				} catch (CoreException e1) {
+					e1.printStackTrace();
+				}
+
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+
+			}
+		});
 	}
 
 	private void rebuildPosition(Position position, boolean editable) {
@@ -290,13 +317,13 @@ public class ObjectPropertiesView extends ViewPart {
 			if (property3d instanceof SelectionOverlay)
 				continue;
 			PropertyEditor group;
-			if(property3d instanceof MultiMesh){	
+			if (property3d instanceof MultiMesh) {
 				group = new MultiMeshEditor(parent, SWT.NONE, sceneEditor, object3d);
 			} else {
 				group = new PropertyEditor(parent, SWT.NONE, sceneEditor, object3d);
 			}
 			group.renew(property3d, editable);
-			propertiesPanels.put(property3d, group);	
+			propertiesPanels.put(property3d, group);
 		}
 	}
 
@@ -316,7 +343,7 @@ public class ObjectPropertiesView extends ViewPart {
 		}
 		if (object3d != null) {
 			Utils.setIfChangeString(objectName, object3d.getName());
-			
+
 			Position position = object3d.getPosition();
 			Vector3f translation = position.getTranslation();
 			Utils.setIfChangeFloat(inputTX, translation.x);
@@ -339,9 +366,9 @@ public class ObjectPropertiesView extends ViewPart {
 			inputSY.setEnabled(editable);
 			Utils.setIfChangeFloat(inputSZ, scale.z);
 			inputSZ.setEnabled(editable);
-			for(Property3d property3d:object3d.getProperties()){
+			for (Property3d property3d : object3d.getProperties()) {
 				PropertyEditor propertyEditor = propertiesPanels.get(property3d);
-				if(propertyEditor!=null)
+				if (propertyEditor != null)
 					propertyEditor.renew(property3d, editable);
 
 			}

@@ -17,10 +17,4 @@ public class CapsuleCollisionBody extends AbstractCollisionBody {
 		shape = capsuleShape;
 	}
 
-	public CapsuleCollisionBody(PhysicController physicController, float radius, float height) {
-		super(physicController);
-		capsuleShape = new CapsuleShape(radius, height);
-		shape = capsuleShape;
-	}
-
 }
