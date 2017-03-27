@@ -18,6 +18,8 @@ import org.lwjgl.opengl.DisplayMode;
 
 public class Utils {
 
+	public static final int KEY_DELETE = 0x7f;
+	public static final int KEY_CTRL = 0x40000;
 	public static void initDisplay(int w,int h,boolean fullscreen) {
 		try {
 			Dimension screenSize = new Dimension(w, h);

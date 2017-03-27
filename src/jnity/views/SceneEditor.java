@@ -67,8 +67,7 @@ import physics.PhysicController;
 
 public class SceneEditor extends EditorPart {
 
-	protected static final int KEY_DELETE = 0x7f;
-	protected static final int KEY_CTRL = 0x40000;
+
 	GLCanvas canvas;
 	String filePath;
 
@@ -160,6 +159,10 @@ public class SceneEditor extends EditorPart {
 		SceneTreeView sceneTreeView = SceneTreeView.getInstance();
 		if (sceneTreeView != null) {
 			sceneTreeView.setSceneEditor(this);
+		}
+		ObjectPropertiesView objectPropertiesView = ObjectPropertiesView.getInstance();
+		if (objectPropertiesView != null) {
+			objectPropertiesView.setObject(this, sceneController.getSelectedObject(), !sceneController.isPlaying());
 		}
 	}
 
@@ -257,19 +260,16 @@ public class SceneEditor extends EditorPart {
 			@Override
 			public void keyReleased(KeyEvent e) {
 				Object3d selected = sceneController.getSelectedObject();
-				if ((e.keyCode == (int) 'x') && keys.contains(KEY_CTRL) && selected != null) {
-					selected.remove(SelectionOverlay.class);
+				if ((e.keyCode == (int) 'x') && keys.contains(Utils.KEY_CTRL) && selected != null) {
 					ClipboardUtils.setClipboardContents(selected.fastClone());
 					sceneController.getScene().remove(sceneController.getSelectedObject());
 					sceneController.setSelectedObject(null);
 					makeDirty("Cut Object");
 				}
-				if ((e.keyCode == (int) 'c') && keys.contains(KEY_CTRL) && selected != null) {
-					selected.remove(SelectionOverlay.class);
+				if ((e.keyCode == (int) 'c') && keys.contains(Utils.KEY_CTRL) && selected != null) {
 					ClipboardUtils.setClipboardContents(selected.fastClone());
-					selected.add(new SelectionOverlay());
 				}
-				if ((e.keyCode == (int) 'v') && keys.contains(KEY_CTRL)) {
+				if ((e.keyCode == (int) 'v') && keys.contains(Utils.KEY_CTRL)) {
 					Object3d object3d = ClipboardUtils.getClipboardContents();
 					if (object3d != null) {
 						sceneController.getScene().add(object3d);
@@ -277,7 +277,7 @@ public class SceneEditor extends EditorPart {
 						makeDirty("Insert Object");
 					}
 				}
-				if ((e.keyCode == KEY_DELETE) && (sceneController.getSelectedObject() != null)) {
+				if ((e.keyCode == Utils.KEY_DELETE) && (sceneController.getSelectedObject() != null)) {
 					sceneController.getScene().remove(sceneController.getSelectedObject());
 					sceneController.setSelectedObject(null);
 					makeDirty("delete");
