@@ -1,6 +1,5 @@
-package io;
+package unsed;
 import java.util.ArrayList;
-import android.opengl.Matrix;
 
 public class Scene3D {
 	public ArrayList<Material3D> materials;
@@ -90,8 +89,8 @@ public class Scene3D {
 
 	private void applyRot(float[] result, float[] data, float t)
 	{
-		if (Math.abs(data[3]) > 1.0e-7 && Math.hypot(Math.hypot(data[0], data[1]), data[2]) > 1.0e-7)
-			Matrix.rotateM(result, 0, (float) (data[3] * t * 180 / Math.PI), data[0], data[1], data[2]);
+		//if (Math.abs(data[3]) > 1.0e-7 && Math.hypot(Math.hypot(data[0], data[1]), data[2]) > 1.0e-7)
+			//Matrix.rotateM(result, 0, (float) (data[3] * t * 180 / Math.PI), data[0], data[1], data[2]);
 	}
 
 	public void Compute(float time)
@@ -137,7 +136,7 @@ public class Scene3D {
 			if (anim.parent != null)
 				Matrix.multiplyMM(anim.result, 0, anim.parent.result, 0, result, 0);
 			else
-				Matrix.translateM(anim.result, 0, result, 0, 0, 0, 0);
+				//Matrix.translateM(anim.result, 0, result, 0, 0, 0, 0);
 
 			if (obj != null && obj.trMatrix != null) {
 				float[] pivot = new float[16];

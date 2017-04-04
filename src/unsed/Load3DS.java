@@ -1,4 +1,4 @@
-package io;
+package unsed;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -6,9 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 
-/*import android.opengl.Matrix;
-import android.os.Environment;
-import android.util.Log;*/
 
 public class Load3DS {
 	private final int CHUNK_MAIN     = 0x4D4D;
@@ -312,7 +309,7 @@ public class Load3DS {
 				localCoord[15] = 1;
 
 				obj.trMatrix = new float[16];
-				Matrix.invertM(obj.trMatrix, 0, localCoord, 0);
+				//Matrix.invertM(obj.trMatrix, 0, localCoord, 0);
 				break;
 
 			default:
