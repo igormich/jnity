@@ -9,8 +9,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 
 import base.Object3d;
+import jnity.Utils;
 import jnity.views.SceneEditor;
-import jnity.views.Utils;
 import properties.Property3d;
 
 public class PropertyEditor {

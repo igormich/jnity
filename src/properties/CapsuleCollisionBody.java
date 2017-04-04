@@ -3,8 +3,6 @@ package properties;
 import com.bulletphysics.collision.shapes.CapsuleShape;
 
 import physics.AbstractCollisionBody;
-import physics.PhysicController;
-import base.Object3d;
 
 public class CapsuleCollisionBody extends AbstractCollisionBody {
 	

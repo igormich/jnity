@@ -1,6 +1,26 @@
-package jnity.views;
+package jnity;
 
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_BACK;
+import static org.lwjgl.opengl.GL11.GL_COLOR_MATERIAL;
+import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
+import static org.lwjgl.opengl.GL11.GL_DOUBLEBUFFER;
+import static org.lwjgl.opengl.GL11.GL_DST_COLOR;
+import static org.lwjgl.opengl.GL11.GL_LEQUAL;
+import static org.lwjgl.opengl.GL11.GL_NICEST;
+import static org.lwjgl.opengl.GL11.GL_PERSPECTIVE_CORRECTION_HINT;
+import static org.lwjgl.opengl.GL11.GL_SMOOTH;
+import static org.lwjgl.opengl.GL11.GL_SRC_COLOR;
+import static org.lwjgl.opengl.GL11.glBlendFunc;
+import static org.lwjgl.opengl.GL11.glClearColor;
+import static org.lwjgl.opengl.GL11.glClearDepth;
+import static org.lwjgl.opengl.GL11.glClearStencil;
+import static org.lwjgl.opengl.GL11.glCullFace;
+import static org.lwjgl.opengl.GL11.glDepthFunc;
+import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL11.glHint;
+import static org.lwjgl.opengl.GL11.glLoadIdentity;
+import static org.lwjgl.opengl.GL11.glShadeModel;
 
 import java.awt.Canvas;
 import java.awt.Dimension;
@@ -15,6 +35,10 @@ import org.eclipse.swt.widgets.Text;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
+
+import base.Object3d;
+import properties.MultiMesh;
+import properties.Property3d;
 
 public class Utils {
 
@@ -130,5 +154,18 @@ public class Utils {
 		if (!input.getText().equals(value)) {
 			input.setText(value);
 		}	
+	}
+	public static void printChildren(String tabs, Object3d root) {
+		System.out.println(tabs + root.getID());
+		for (Property3d property : root.getProperties()) {
+			System.out.println(tabs + property.getClass());
+			if (property instanceof MultiMesh) {
+				MultiMesh mesh = (MultiMesh) property;
+				System.out.println(tabs + mesh.getFileName());
+			}
+		}
+		for (Object3d object3d : root.getChildren())
+			printChildren(tabs + "\t", object3d);
+
 	}
 }

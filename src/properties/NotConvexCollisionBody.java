@@ -8,13 +8,13 @@ import javax.vecmath.Vector3f;
 
 import org.lwjgl.BufferUtils;
 
-import physics.TriangleStrip;
-import base.Object3d;
-
 import com.bulletphysics.collision.shapes.BvhTriangleMeshShape;
 import com.bulletphysics.collision.shapes.IndexedMesh;
 import com.bulletphysics.collision.shapes.ScalarType;
 import com.bulletphysics.collision.shapes.TriangleIndexVertexArray;
+
+import base.Object3d;
+import physics.TriangleStrip;
 
 public class NotConvexCollisionBody extends MeshCollisionBody {
 	

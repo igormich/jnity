@@ -10,8 +10,6 @@ import java.util.Map;
 import javax.vecmath.Vector2f;
 import javax.vecmath.Vector3f;
 
-import materials.Material;
-import materials.MaterialLibrary;
 import properties.Mesh;
 import properties.MultiMesh;
 

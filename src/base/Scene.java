@@ -45,7 +45,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.lwjgl.BufferUtils;
-import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 
 import materials.HashMapMaterialLibrary;
@@ -91,6 +90,7 @@ public class Scene implements Externalizable{
 			Scene.this.storeTransparent(transparentObject,owner);
 		}
 
+		@SuppressWarnings("unused")
 		public void setUseMaterial(boolean useMaterial) {
 			this.useMaterial = useMaterial;
 		}
@@ -103,6 +103,7 @@ public class Scene implements Externalizable{
 			return selectMode;
 		}
 
+		@SuppressWarnings("unused")
 		public void setSelectMode(boolean selectMode) {
 			this.selectMode = selectMode;
 		}
@@ -113,7 +114,6 @@ public class Scene implements Externalizable{
 
 		public void setCamera(Camera camera) {
 			this.camera = camera;
-			Matrix4f m = camera.getPosition().getAbsoluteMatrix();
 			Vector3f camPos0 = camera.getPosition().getAbsoluteTranslation();
 			camDir = camera.getPosition().getAbsoluteFrontVector();
 			camDir.y = -camDir.x;

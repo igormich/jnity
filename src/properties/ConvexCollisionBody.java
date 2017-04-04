@@ -2,11 +2,11 @@ package properties;
 
 import javax.vecmath.Vector3f;
 
-import physics.TriangleStrip;
-import base.Object3d;
-
 import com.bulletphysics.collision.shapes.ConvexHullShape;
 import com.bulletphysics.util.ObjectArrayList;
+
+import base.Object3d;
+import physics.TriangleStrip;
 
 public class ConvexCollisionBody extends MeshCollisionBody {
 	

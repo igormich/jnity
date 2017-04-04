@@ -21,7 +21,6 @@ import org.lwjgl.util.vector.Vector3f;
 
 import base.Object3d;
 import base.Position;
-import base.Scene;
 import io.MeshLoaderOBJ;
 import io.MeshLoaderSMD;
 import io.ResourceController;

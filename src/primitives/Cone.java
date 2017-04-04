@@ -44,9 +44,7 @@ public class Cone {
 		double start = 0;
 		double end =  Math.PI*2;
 		double step = Math.PI/30;
-		int i=0;
 		for(double angle=start;angle<end;angle+=step){
-			Vector3f color= (i++ % 2 ==0) ? green: blue;
 			double angle1 = angle + step;
 			Vector3f leftDownV=new Vector3f((float) (r1*Math.cos(angle)), 0, (float) (r1*Math.sin(angle)));
 			Vector3f rightDownV=new Vector3f((float) (r1*Math.cos(angle1)), 0, (float) (r1*Math.sin(angle1)));

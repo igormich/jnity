@@ -12,7 +12,6 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -22,8 +21,6 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.launching.JavaRuntime;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.part.FileEditorInput;
 
 import base.Camera;
 import base.Object3d;
@@ -34,7 +31,6 @@ import materials.HashMapMaterialLibrary;
 import materials.MaterialLibrary;
 import materials.SimpleMaterial;
 import physics.PhysicController;
-import properties.MultiMesh;
 import properties.Property3d;
 
 public class SceneController {
@@ -131,19 +127,7 @@ public class SceneController {
 		}
 	}
 
-	private void printChildren(String tabs, Object3d root) {
-		System.out.println(tabs + root.getID());
-		for (Property3d property : root.getProperties()) {
-			System.out.println(tabs + property.getClass());
-			if (property instanceof MultiMesh) {
-				MultiMesh mesh = (MultiMesh) property;
-				System.out.println(tabs + mesh.getFileName());
-			}
-		}
-		for (Object3d object3d : root.getChildren())
-			printChildren(tabs + "\t", object3d);
 
-	}
 
 	public InputStream openContentStream() {
 		try {
@@ -190,7 +174,7 @@ public class SceneController {
 
 	public void setSelectedObject(Object3d object) {
 		if (selected != null) {
-			selected.remove(SelectionOverlay.class);
+			selected.removeAll(SelectionOverlay.class);
 		}
 		selected = object;
 		if (selected != null) {

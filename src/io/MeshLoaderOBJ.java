@@ -3,16 +3,11 @@ package io;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import javax.vecmath.Vector2f;
 import javax.vecmath.Vector3f;
 
-import materials.MaterialLibrary;
 import properties.Mesh;
 import properties.MultiMesh;
 

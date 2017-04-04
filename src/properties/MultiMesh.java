@@ -9,17 +9,12 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.swing.text.StyleContext.SmallAttributeSet;
 import javax.vecmath.Vector3f;
 
-import physics.TriangleStrip;
 import base.Object3d;
 import base.RenderContex;
-import io.MeshLoaderOBJ;
-import io.MeshLoaderSMD;
 import io.ResourceController;
-import materials.Material;
-import materials.MaterialLibrary;
+import physics.TriangleStrip;
 
 public class MultiMesh implements Property3d, TriangleStrip,Externalizable {
 

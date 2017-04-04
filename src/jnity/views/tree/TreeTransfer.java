@@ -5,7 +5,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.util.Policy;
 import org.eclipse.swt.dnd.ByteArrayTransfer;
-import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.dnd.TransferData;
 
 import base.Object3d;
@@ -19,8 +18,6 @@ public class TreeTransfer extends ByteArrayTransfer {
 	    private static final TreeTransfer INSTANCE = new TreeTransfer();
 
 	    private Object3d selection;
-
-	    private long selectionSetTime;
 
 
 	    protected TreeTransfer() {

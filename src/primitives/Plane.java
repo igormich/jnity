@@ -1,12 +1,9 @@
 package primitives;
 
-import javax.vecmath.Vector3f;
 import javax.vecmath.Vector2f;
-
-
+import javax.vecmath.Vector3f;
 
 import properties.Mesh;
-import properties.Property3d;
 
 public class Plane {
 

@@ -1,6 +1,6 @@
 package base;
 
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.glColor3f;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,8 +17,6 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import properties.Property3d;
-import jnity.properties.EditorProperty;
-import jnity.properties.SelectionOverlay;
 
 public class Object3d implements Externalizable, FastCloneable {
 
@@ -129,16 +126,10 @@ public class Object3d implements Externalizable, FastCloneable {
 		return this;
 	}
 
-	public <T extends Property3d> void remove(Class<T> type) {
-		properties.stream().filter(property -> property.getClass().equals(type))
+	public <T extends Property3d> void removeAll(Class<T> type) {
+		properties.stream().filter(property -> property.getClass().isInstance(type))
 				.forEach(property -> property.unRegister(this));
 		properties.removeIf(property -> property.getClass().equals(type));
-	}
-	private void removeAll(Class<EditorProperty> type) {
-		properties.stream().filter(property -> property.getClass().isInstance(type))
-		.forEach(property -> property.unRegister(this));
-		properties.removeIf(property -> property.getClass().isInstance(type));
-		
 	}
 	public void remove(Property3d property) {
 		property.unRegister(this);
@@ -167,7 +158,6 @@ public class Object3d implements Externalizable, FastCloneable {
 	}
 
 	public void render(RenderContex renderContex) {
-		//class.getMethod("myMethod").getDeclaringClass();
 		if (!visible)
 			return;
 		position.apply();

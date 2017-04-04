@@ -56,7 +56,7 @@ import base.Camera;
 import base.Object3d;
 import io.ResourceController;
 import jnity.SampleHandler;
-import jnity.properties.SelectionOverlay;
+import jnity.Utils;
 import jnity.views.editor.ClipboardUtils;
 import jnity.views.editor.ProjectResourseListener;
 import jnity.views.editor.SceneController;

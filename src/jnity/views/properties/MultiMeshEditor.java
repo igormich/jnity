@@ -15,8 +15,8 @@ import org.eclipse.swt.widgets.Label;
 
 import base.Object3d;
 import io.ResourceController;
+import jnity.Utils;
 import jnity.views.SceneEditor;
-import jnity.views.Utils;
 import jnity.views.editor.SceneController;
 import properties.Mesh;
 import properties.MultiMesh;

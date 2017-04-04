@@ -1,11 +1,11 @@
 package jnity.views.editor;
+import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
-import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.Toolkit;
-import java.io.*;
+import java.io.IOException;
 
 import base.Object3d;
 
