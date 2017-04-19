@@ -5,6 +5,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
 import base.Object3d;
+import jnity.views.SceneController;
 import jnity.views.SceneEditor;
 
 public class SceneEditorListener implements Listener {

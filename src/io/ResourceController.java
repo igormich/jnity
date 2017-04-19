@@ -11,8 +11,9 @@ import properties.MultiMesh;
 public class ResourceController {
 	static ResourceController resourceController = new ResourceController();
 	private static Map<Thread, ResourceController> controllers = new HashMap<>();
-	private String texturesPath = "";
-	private String modelPath = "";
+	private String texturesPath = "textures/";
+	private String modelPath = "models/";
+	private String soundPath = "sounds/";
 	
 	private HashMap<String, MultiMesh> meshes=new HashMap<>();
 	private HashMap<String, Texture> textures=new HashMap<>();
@@ -65,5 +66,12 @@ public class ResourceController {
 	public void emptyCache(){
 		meshes.clear();
 		textures.clear();
+	}
+
+	public void setSoundPath(String path) {
+		this.soundPath = path;	
+	}
+	public String getSoundPath() {
+		return soundPath;
 	}
 }

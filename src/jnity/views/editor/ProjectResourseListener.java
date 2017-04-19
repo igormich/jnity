@@ -10,6 +10,7 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 
 import base.Object3d;
+import jnity.views.SceneController;
 import materials.Material;
 import properties.Property3d;
 

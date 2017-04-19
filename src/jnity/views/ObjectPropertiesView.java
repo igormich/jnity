@@ -31,7 +31,6 @@ import base.Object3d;
 import base.Position;
 import jnity.Utils;
 import jnity.properties.EditorProperty;
-import jnity.views.editor.SceneController;
 import jnity.views.properties.MultiMeshEditor;
 import jnity.views.properties.PropertieAdder;
 import jnity.views.properties.PropertyEditor;

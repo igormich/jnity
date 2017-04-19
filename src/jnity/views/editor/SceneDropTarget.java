@@ -24,15 +24,17 @@ import base.Position;
 import io.MeshLoaderOBJ;
 import io.MeshLoaderSMD;
 import io.ResourceController;
+import jnity.views.SceneController;
 import jnity.views.SceneEditor;
 import materials.Material;
 import materials.TexturedMaterial;
 import properties.MultiMesh;
 import properties.Property3d;
+import properties.SoundSourse;
 
 public class SceneDropTarget extends DropTargetAdapter {
 	enum DropType {
-		TEXTURE, MODEL, JAVA_CLASS, PREFAB, UNDEFINED
+		TEXTURE, MODEL, JAVA_CLASS, PREFAB, SOUND, UNDEFINED
 	}
 
 	private SceneController sceneController;
@@ -62,6 +64,9 @@ public class SceneDropTarget extends DropTargetAdapter {
 				case PREFAB:
 					dropPrefab(event);
 					break;
+				case SOUND:
+					dropSound(event);
+					break;
 				default:
 					break;
 				}
@@ -70,6 +75,33 @@ public class SceneDropTarget extends DropTargetAdapter {
 			e.printStackTrace();
 		}
 
+	}
+
+	private void dropSound(DropTargetEvent event) throws FileNotFoundException, CoreException {
+		ResourceController.getOrCreate().setSoundPath(sceneController.getSoundFolder().getLocation().toString() + "/");
+		File f = null;
+		Object3d target = sceneEditor.getObjectFromScreenPoint(event.x, event.y);
+		if (target != null) {
+			if (FileTransfer.getInstance().isSupportedType(event.currentDataType)) {
+				String[] fileNames = (String[]) event.data;
+				String fileName = fileNames[0];
+				f = new File(fileName);
+				if (!copyFile(f, sceneController.getSoundFolder()))
+					return;
+			}
+			if (ResourceTransfer.getInstance().isSupportedType(event.currentDataType)) {
+				IResource[] resources = (IResource[]) event.data;
+				IResource resource = resources[0];
+				if (!resource.getProject().equals(sceneController.getProject()))
+					return;
+				f = resource.getLocation().toFile();
+			}
+			SoundSourse soundSourse = new SoundSourse();
+			soundSourse.setFileName(f.getName());
+			target.add(soundSourse);
+			sceneEditor.makeDirty("add Sound");
+		}
+		
 	}
 
 	private void dropClass(DropTargetEvent event) throws MalformedURLException, ClassNotFoundException, CoreException {
@@ -229,6 +261,8 @@ public class SceneDropTarget extends DropTargetAdapter {
 				return DropType.TEXTURE;
 			if (fileName.endsWith(".obj") || fileName.endsWith(".smd"))
 				return DropType.MODEL;
+			if (fileName.equals("wav") || fileName.equals("ogg"))
+				return DropType.SOUND;
 		}
 		if (ResourceTransfer.getInstance().isSupportedType(event.currentDataType)) {
 			IResource[] resources = (IResource[]) event.data;
@@ -239,6 +273,8 @@ public class SceneDropTarget extends DropTargetAdapter {
 				return DropType.TEXTURE;
 			if (resourceName.equals("obj") || resourceName.equals("smd"))
 				return DropType.MODEL;
+			if (resourceName.equals("wav") || resourceName.equals("ogg"))
+				return DropType.SOUND;
 			if (resourceName.equals("java"))
 				return DropType.JAVA_CLASS;
 			if (resourceName.equals("prefab"))

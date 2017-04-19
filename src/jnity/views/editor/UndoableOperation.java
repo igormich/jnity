@@ -10,6 +10,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
+import jnity.views.SceneController;
+
 public class UndoableOperation extends AbstractOperation {
 
 	private InputStream previousContentStream;

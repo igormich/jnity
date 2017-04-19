@@ -1,4 +1,4 @@
-package jnity.views.editor;
+package jnity.views;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -27,6 +27,8 @@ import base.Object3d;
 import base.Scene;
 import io.ResourceController;
 import jnity.properties.SelectionOverlay;
+import jnity.views.editor.ClassLoaderObjectInputStream;
+import jnity.views.editor.ProjectResourseListener;
 import materials.HashMapMaterialLibrary;
 import materials.MaterialLibrary;
 import materials.SimpleMaterial;
@@ -46,6 +48,7 @@ public class SceneController {
 	private boolean playing = false;
 	private InputStream baseState;
 	private byte[] previousContent;
+	private IFolder soundFolder;
 
 	public boolean isPlaying() {
 		return playing;
@@ -166,6 +169,9 @@ public class SceneController {
 		prefabFolder = project.getFolder("prefabs");
 		if (!prefabFolder.exists())
 			prefabFolder.create(IResource.NONE, true, null);
+		soundFolder = project.getFolder("sounds");
+		if (!soundFolder.exists())
+			soundFolder.create(IResource.NONE, true, null);
 	}
 
 	public Object3d getSelectedObject() {
@@ -282,6 +288,10 @@ public class SceneController {
 		try (URLClassLoader classLoader = getClassLoader()) {
 			return classLoader.loadClass(classPath);
 		}
+	}
+
+	public IFolder getSoundFolder() {
+		return soundFolder;
 	}
 
 }

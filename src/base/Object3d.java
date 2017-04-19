@@ -327,4 +327,7 @@ public class Object3d implements Externalizable, FastCloneable {
 		visible = in.readBoolean();
 		
 	}
+	public void onCollision(Object3d otherObject) {
+		getProperties().forEach(p -> p.collision(this, otherObject));
+	}
 }

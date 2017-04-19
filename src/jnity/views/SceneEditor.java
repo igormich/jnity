@@ -59,7 +59,6 @@ import jnity.SampleHandler;
 import jnity.Utils;
 import jnity.views.editor.ClipboardUtils;
 import jnity.views.editor.ProjectResourseListener;
-import jnity.views.editor.SceneController;
 import jnity.views.editor.SceneDropTarget;
 import jnity.views.editor.SceneEditorListener;
 import jnity.views.editor.UndoableOperation;

@@ -38,8 +38,9 @@ public class PhysicController {
 	private CollisionDispatcher dispatcher;
 	private Vector3f gravity = NORMAL_GRAVIRY;
 
-	private Map<Object3d, RigidBody> bodies = new HashMap<Object3d, RigidBody>();
-
+	private Map<Object3d, RigidBody> bodies = new HashMap<>();
+	private Map<RigidBody, Object3d> objects = new HashMap<>();
+	
 	private Map<Pair<RigidBody, RigidBody>, PersistentManifold> collisions = new HashMap<Pair<RigidBody, RigidBody>, PersistentManifold>();
 
 	public PhysicController() {
@@ -73,6 +74,7 @@ public class PhysicController {
 		rb.setFriction(body.getFriction());
 
 		bodies.put(owner, rb);
+		objects.put(rb, owner);
 		return rb;
 	}
 
@@ -89,7 +91,7 @@ public class PhysicController {
 		dynamicsWorld.stepSimulation(time, steps);
 
 		int numManifolds = dispatcher.getNumManifolds();
-		collisions.clear();
+		HashMap<Pair<RigidBody, RigidBody>, PersistentManifold> newCollisions = new HashMap<>();
 		for (int i = 0; i < numManifolds; i++) {
 			PersistentManifold contactManifold = dispatcher.getManifoldByIndexInternal(i);
 			if (contactManifold.getNumContacts() == 0)
@@ -97,11 +99,18 @@ public class PhysicController {
 			RigidBody obA = (RigidBody) contactManifold.getBody0();
 			RigidBody obB = (RigidBody) contactManifold.getBody1();
 			if (!obA.equals(obB)) {
-				collisions.put(new Pair<RigidBody, RigidBody>(obA, obB), contactManifold);
-				collisions.put(new Pair<RigidBody, RigidBody>(obB, obA), contactManifold);
+				newCollisions.put(new Pair<RigidBody, RigidBody>(obA, obB), contactManifold);
+				newCollisions.put(new Pair<RigidBody, RigidBody>(obB, obA), contactManifold);
+			}
+			if(!collisions.containsKey(new Pair<RigidBody, RigidBody>(obA, obB))){
+				Object3d a = objects.get(obA);
+				Object3d b = objects.get(obB);
+				a.onCollision(b);
+				b.onCollision(a);
 			}
 		}
-		// System.out.println(collisions.size());
+		collisions = newCollisions;
+		//System.out.println(collisions.size());
 		applyTranforms();
 	}
 
@@ -160,6 +169,7 @@ public class PhysicController {
 
 	public void removeBody(Object3d owner) {
 		RigidBody rigidBody = bodies.remove(owner);
+		objects.remove(owner);
 		dynamicsWorld.removeRigidBody(rigidBody);
 	}
 }

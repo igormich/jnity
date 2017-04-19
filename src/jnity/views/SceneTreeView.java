@@ -23,7 +23,6 @@ import org.eclipse.ui.part.ViewPart;
 import base.Object3d;
 import jnity.Utils;
 import jnity.views.editor.ClipboardUtils;
-import jnity.views.editor.SceneController;
 import jnity.views.tree.SceneContentProvider;
 import jnity.views.tree.TreeDragListener;
 import jnity.views.tree.TreeDropListener;
